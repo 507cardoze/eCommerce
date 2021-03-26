@@ -7,6 +7,8 @@ import {
   signInFailure,
   signOutSucess,
   signOutFailure,
+  signUpSucess,
+  signUpFailure,
 } from "./user.actions";
 
 import {
@@ -15,6 +17,19 @@ import {
   createUserProfileDocument,
   getCurrentUser,
 } from "../../firebase/firebase.utils";
+
+export function* signUp({ payload: { displayName, email, password } }) {
+  try {
+    const { user } = yield auth.createUserWithEmailAndPassword(email, password);
+
+    yield createUserProfileDocument(user, { displayName });
+
+    yield put(signUpSucess());
+  } catch (error) {
+    console.log(error);
+    yield put(signUpFailure());
+  }
+}
 
 export function* getSnapshotFromUserAuth(userAuth) {
   try {
@@ -84,11 +99,16 @@ export function* onsignOutStart() {
   yield takeLatest(UserActionTypes.SIGN_OUT_START, signOut);
 }
 
+export function* onsignUpStart() {
+  yield takeLatest(UserActionTypes.SIGN_UP_START, signUp);
+}
+
 export function* userSagas() {
   yield all([
     call(onGoggleSignInStart),
     call(onEmailSignInStart),
     call(onCheckUserSession),
     call(onsignOutStart),
+    call(onsignUpStart),
   ]);
 }
