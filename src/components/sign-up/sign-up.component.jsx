@@ -3,7 +3,6 @@ import { connect } from "react-redux";
 import FormInput from "../form-input/form-input.component";
 import CustomButton from "../custom-button/custom-button.component";
 import { SignUpContainer, SignUpTitle } from "./sign-up.styles";
-
 import { signUpStart } from "../../redux/user/user.actions";
 
 class SignUp extends React.Component {
@@ -28,15 +27,7 @@ class SignUp extends React.Component {
       alert("passwords don't match");
       return;
     }
-
-    signUpStart(displayName, email, password);
-
-    this.setState({
-      displayName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
+    signUpStart({ displayName, email, password });
   };
 
   handleChange = (event) => {
@@ -91,8 +82,7 @@ class SignUp extends React.Component {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  signUpStart: (displayName, email, password) =>
-    dispatch(signUpStart({ displayName, email, password })),
+  signUpStart: (userCredentials) => dispatch(signUpStart(userCredentials)),
 });
 
 export default connect(null, mapDispatchToProps)(SignUp);

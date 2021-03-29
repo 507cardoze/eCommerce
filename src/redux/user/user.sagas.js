@@ -21,19 +21,23 @@ import {
 export function* signUp({ payload: { displayName, email, password } }) {
   try {
     const { user } = yield auth.createUserWithEmailAndPassword(email, password);
-
-    yield createUserProfileDocument(user, { displayName });
-
-    yield put(signUpSucess());
+    yield put(signUpSucess({ user, additionalData: { displayName } }));
   } catch (error) {
-    console.log(error);
-    yield put(signUpFailure());
+    yield put(signUpFailure(error));
   }
 }
 
-export function* getSnapshotFromUserAuth(userAuth) {
+export function* signInAfterSignUp({ payload: { user, additionalData } }) {
+  yield getSnapshotFromUserAuth(user, additionalData);
+}
+
+export function* getSnapshotFromUserAuth(userAuth, additionalData) {
   try {
-    const userRef = yield call(createUserProfileDocument, userAuth);
+    const userRef = yield call(
+      createUserProfileDocument,
+      userAuth,
+      additionalData,
+    );
     const userSnapshot = yield userRef.get();
     yield put(
       signInSucess({
@@ -103,6 +107,10 @@ export function* onsignUpStart() {
   yield takeLatest(UserActionTypes.SIGN_UP_START, signUp);
 }
 
+export function* onSignUpSucess() {
+  yield takeLatest(UserActionTypes.SIGN_UP_SUCCESS, signInAfterSignUp);
+}
+
 export function* userSagas() {
   yield all([
     call(onGoggleSignInStart),
@@ -110,5 +118,6 @@ export function* userSagas() {
     call(onCheckUserSession),
     call(onsignOutStart),
     call(onsignUpStart),
+    call(onSignUpSucess),
   ]);
 }
